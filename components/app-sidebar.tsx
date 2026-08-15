@@ -1,5 +1,6 @@
 import * as React from "react"
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs"
+import { auth } from "@clerk/nextjs/server"
 
 import {
   Sidebar,
@@ -8,9 +9,15 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { createWorkflowAction } from "@/features/workflows/actions"
 import { WorkflowNav } from "@/features/workflows/components/workflow-nav"
+import { listWorkflows } from "@/features/workflows/data"
 
-function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+async function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { orgId } = await auth()
+  // No active organization means there is nothing scoped to list yet.
+  const workflows = orgId ? await listWorkflows(orgId) : []
+
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader className="flex-row items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center">
@@ -28,7 +35,10 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarTrigger className="shrink-0" />
       </SidebarHeader>
       <SidebarContent>
-        <WorkflowNav />
+        <WorkflowNav
+          workflows={workflows}
+          createWorkflowAction={createWorkflowAction}
+        />
       </SidebarContent>
       <SidebarFooter className="group-data-[collapsible=icon]:items-center">
         <UserButton

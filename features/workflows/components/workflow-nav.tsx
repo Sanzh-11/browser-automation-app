@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
-import { PlusIcon, WorkflowIcon } from "lucide-react"
+import { useTransition } from "react"
+import { Loader2Icon, PlusIcon, WorkflowIcon } from "lucide-react"
 
 import {
   Popover,
@@ -19,33 +19,37 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar"
+import type { Workflow } from "@/lib/db/schema"
 
-// Placeholder data until workflows are persisted and fetched per organization.
-const workflows = [
-  "dominant-wasp",
-  "honest-reindeer",
-  "expected-llama",
-  "essential-ocelot",
-  "creepy-echidna",
-  "eastern-silkworm",
-  "cultural-lion",
-  "proud-weasel",
-  "regional-bonobo",
-]
+import { generateSlug } from "../lib/generate-slug"
 
-function WorkflowNav() {
+type WorkflowNavProps = {
+  workflows: Workflow[]
+  // The server action is passed down from the server component that renders
+  // this nav — it can't be imported here without pulling server code into the
+  // client bundle.
+  createWorkflowAction: (name: string) => Promise<void>
+}
+
+function WorkflowNav({ workflows, createWorkflowAction }: WorkflowNavProps) {
   const { state } = useSidebar()
-  const [activeWorkflow, setActiveWorkflow] = React.useState(workflows[0])
+  const [isCreating, startCreating] = useTransition()
+
+  // The action redirects to the new workflow on success, so there is nothing to
+  // do here afterwards — the transition stays pending until the navigation
+  // commits.
+  const createWorkflow = () => {
+    startCreating(async () => {
+      await createWorkflowAction(generateSlug())
+    })
+  }
 
   const workflowMenu = (
     <SidebarMenu>
       {workflows.map((workflow) => (
-        <SidebarMenuItem key={workflow}>
-          <SidebarMenuButton
-            isActive={workflow === activeWorkflow}
-            onClick={() => setActiveWorkflow(workflow)}
-          >
-            <span>{workflow}</span>
+        <SidebarMenuItem key={workflow.id}>
+          <SidebarMenuButton>
+            <span>{workflow.name}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
@@ -69,8 +73,15 @@ function WorkflowNav() {
                 <PopoverContent side="right" align="start">
                   <SidebarMenu>
                     <SidebarMenuItem>
-                      <SidebarMenuButton>
-                        <PlusIcon />
+                      <SidebarMenuButton
+                        onClick={createWorkflow}
+                        disabled={isCreating}
+                      >
+                        {isCreating ? (
+                          <Loader2Icon className="animate-spin" />
+                        ) : (
+                          <PlusIcon />
+                        )}
                         <span>New workflow</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -89,8 +100,12 @@ function WorkflowNav() {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Workflows</SidebarGroupLabel>
-      <SidebarGroupAction title="New workflow">
-        <PlusIcon />
+      <SidebarGroupAction
+        title="New workflow"
+        onClick={createWorkflow}
+        disabled={isCreating}
+      >
+        {isCreating ? <Loader2Icon className="animate-spin" /> : <PlusIcon />}
         <span className="sr-only">New workflow</span>
       </SidebarGroupAction>
       <SidebarGroupContent>{workflowMenu}</SidebarGroupContent>
