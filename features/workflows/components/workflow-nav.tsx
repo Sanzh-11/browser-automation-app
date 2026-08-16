@@ -1,6 +1,8 @@
 "use client"
 
 import { useTransition } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Loader2Icon, PlusIcon, WorkflowIcon } from "lucide-react"
 
 import {
@@ -33,6 +35,7 @@ type WorkflowNavProps = {
 
 function WorkflowNav({ workflows, createWorkflowAction }: WorkflowNavProps) {
   const { state } = useSidebar()
+  const pathname = usePathname()
   const [isCreating, startCreating] = useTransition()
 
   // The action redirects to the new workflow on success, so there is nothing to
@@ -44,15 +47,23 @@ function WorkflowNav({ workflows, createWorkflowAction }: WorkflowNavProps) {
     })
   }
 
+  // Shared by the collapsed popover and the expanded group, so the active
+  // highlight stays in sync between them.
   const workflowMenu = (
     <SidebarMenu>
-      {workflows.map((workflow) => (
-        <SidebarMenuItem key={workflow.id}>
-          <SidebarMenuButton>
-            <span>{workflow.name}</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {workflows.map((workflow) => {
+        const href = `/workflows/${workflow.id}`
+
+        return (
+          <SidebarMenuItem key={workflow.id}>
+            <SidebarMenuButton asChild isActive={pathname === href}>
+              <Link href={href}>
+                <span>{workflow.name}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )
+      })}
     </SidebarMenu>
   )
 
