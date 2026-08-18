@@ -3,40 +3,39 @@
 import { useCallback, useSyncExternalStore } from "react"
 import {
   addEdge,
-  Background,
   Controls,
-  MiniMap,
   ReactFlow,
   useEdgesState,
   useNodesState,
   type ColorMode,
   type Edge,
-  type Node,
   type OnConnect,
   ConnectionLineType,
+  NodeTypes,
 } from "@xyflow/react"
 import { useTheme } from "next-themes"
+import { StepNode } from "./step-node"
+import type { StepNodeType } from "@/features/workflows/nodes/node-registry"
 
-const initialNodes: Node[] = [
+const nodeTypes: NodeTypes = {
+  step: StepNode,
+}
+
+const initialNodes: StepNodeType[] = [
   {
-    id: "n1",
-    type: "input",
+    id: "start",
+    type: "step",
     position: { x: 0, y: 0 },
-    data: { label: "Start" },
-  },
-  { id: "n2", position: { x: 0, y: 120 }, data: { label: "Open URL" } },
-  {
-    id: "n3",
-    type: "output",
-    position: { x: 0, y: 240 },
-    data: { label: "Extract" },
+    data: {
+      type: "start",
+      kind: "trigger",
+      title: "Start",
+      values: {},
+    },
   },
 ]
 
-const initialEdges: Edge[] = [
-  { id: "n1-n2", source: "n1", target: "n2" },
-  { id: "n2-n3", source: "n2", target: "n3" },
-]
+const initialEdges: Edge[] = []
 
 function Canvas() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes)
@@ -51,6 +50,7 @@ function Canvas() {
 
   return (
     <ReactFlow
+      nodeTypes={nodeTypes}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
