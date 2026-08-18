@@ -5,15 +5,13 @@ import {
 } from "@/components/ui/resizable"
 
 import { runWorkflowAction } from "../actions"
+import { Canvas } from "./canvas"
 import { RightSidebar } from "./right-sidebar"
 
 type WorkflowShellProps = {
   workflowId: string
 }
 
-// Every size here is a rem string, not a percentage — the editor's panels are
-// sized against their content (a canvas, a log tail, an inspector form), so they
-// should hold their width as the window resizes instead of scaling with it.
 function WorkflowShell({ workflowId }: WorkflowShellProps) {
   return (
     <ResizablePanelGroup
@@ -24,9 +22,7 @@ function WorkflowShell({ workflowId }: WorkflowShellProps) {
       <ResizablePanel minSize="30rem">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize="18rem">
-            <div className="flex size-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">Canvas</p>
-            </div>
+            <Canvas />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize="8rem" minSize="6rem">

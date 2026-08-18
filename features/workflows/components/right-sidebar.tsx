@@ -146,7 +146,7 @@ function RunFeedback({ error, run }: RunFeedbackProps) {
       ) : null}
 
       {run.error ? (
-        <p className="text-xs break-words text-destructive">
+        <p className="text-xs wrap-break-word text-destructive">
           {run.error.message}
         </p>
       ) : null}
