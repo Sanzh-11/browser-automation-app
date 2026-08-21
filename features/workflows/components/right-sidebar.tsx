@@ -1,8 +1,9 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useState, useTransition } from "react"
+import { unstable_rethrow } from "next/navigation"
 import { useReactFlow, useStore, useStoreApi } from "@xyflow/react"
-import { MoreHorizontal, Play, Trash2 } from "lucide-react"
+import { Loader2Icon, MoreHorizontal, Play, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -25,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
+import { deleteWorkflowAction } from "@/features/workflows/actions"
 import {
   nodeRegistry,
   type NodeDefinition,
@@ -273,7 +275,25 @@ function Palette() {
 // ---------------------------------------------------------------------------
 
 // The "..." menu for workflow-level actions.
-function ActionsMenu() {
+function ActionsMenu({ workflowId }: { workflowId: string }) {
+  const [isDeleting, startDeleting] = useTransition()
+
+  // The action redirects home once the workflow and its Liveblocks room are
+  // gone. A redirecting action *rejects* on the client — the router rejects the
+  // promise with a NEXT_REDIRECT error instead of resolving it — so that error
+  // is the success path and has to go back to the router's RedirectBoundary.
+  // `unstable_rethrow` sends it on and leaves only real failures to report.
+  const deleteWorkflow = () => {
+    startDeleting(async () => {
+      try {
+        await deleteWorkflowAction(workflowId)
+      } catch (error) {
+        unstable_rethrow(error)
+        toast.error("Could not delete this workflow")
+      }
+    })
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -284,12 +304,16 @@ function ActionsMenu() {
       <DropdownMenuContent align="start" className="min-w-48">
         <DropdownMenuItem
           variant="destructive"
+          disabled={isDeleting}
           className="text-xs [&_svg:not([class*='size-'])]:size-3.5"
-          onSelect={() => {
-            // TODO: delete the workflow, then navigate away.
+          onSelect={(event) => {
+            // Keep the menu open for the round trip, so the disabled item is
+            // still on screen while the delete runs.
+            event.preventDefault()
+            deleteWorkflow()
           }}
         >
-          <Trash2 />
+          {isDeleting ? <Loader2Icon className="animate-spin" /> : <Trash2 />}
           Delete workflow
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -317,7 +341,7 @@ function RunButton() {
 // The sidebar itself — header on top, then the Toolbar / Editor tabs.
 // ---------------------------------------------------------------------------
 
-export function RightSidebar() {
+export function RightSidebar({ workflowId }: { workflowId: string }) {
   const [tab, setTab] = useState("toolbar")
 
   const selected = useStore((state) =>
@@ -340,7 +364,7 @@ export function RightSidebar() {
     >
       <Tabs value={tab} onValueChange={setTab} className="size-full gap-0">
         <div className="flex items-center justify-between border-b border-border p-2">
-          <ActionsMenu />
+          <ActionsMenu workflowId={workflowId} />
           <RunButton />
         </div>
         <TabsList className="m-2 w-fit bg-background">

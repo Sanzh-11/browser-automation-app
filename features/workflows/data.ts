@@ -31,3 +31,17 @@ export async function createWorkflow(organizationId: string, name: string) {
 
   return workflow
 }
+
+// Scoped to the organization so a workflow id alone can't delete another org's
+// row. Returns the deleted workflow, or undefined when there was nothing to
+// delete.
+export async function deleteWorkflow(organizationId: string, id: string) {
+  const [workflow] = await db
+    .delete(workflows)
+    .where(
+      and(eq(workflows.id, id), eq(workflows.organizationId, organizationId))
+    )
+    .returning()
+
+  return workflow
+}

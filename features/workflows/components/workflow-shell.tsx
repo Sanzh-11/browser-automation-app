@@ -13,11 +13,7 @@ type WorkflowShellProps = {
 
 function WorkflowShell({ workflowId }: WorkflowShellProps) {
   return (
-    <ResizablePanelGroup
-      orientation="horizontal"
-      className="size-full"
-      data-workflow-id={workflowId}
-    >
+    <ResizablePanelGroup orientation="horizontal" className="size-full">
       <ResizablePanel minSize="30rem">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize="18rem">
@@ -32,7 +28,7 @@ function WorkflowShell({ workflowId }: WorkflowShellProps) {
         </ResizablePanelGroup>
       </ResizablePanel>
       <ResizableHandle withHandle />
-      <RightSidebar />
+      <RightSidebar workflowId={workflowId} />
     </ResizablePanelGroup>
   )
 }
