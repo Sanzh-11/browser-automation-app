@@ -8,11 +8,13 @@ import {
   type Edge,
   ConnectionLineType,
   NodeTypes,
+  Panel,
 } from "@xyflow/react"
 import { useLiveblocksFlow, Cursors } from "@liveblocks/react-flow"
 import { useTheme } from "next-themes"
 import { StepNode } from "./step-node"
 import type { StepNodeType } from "@/features/workflows/nodes/node-registry"
+import { AvatarStack } from "@liveblocks/react-ui"
 
 import "@xyflow/react/dist/style.css"
 import "@liveblocks/react-ui/styles.css"
@@ -76,6 +78,9 @@ function Canvas() {
     >
       <Controls />
       <Cursors />
+      <Panel position="top-right">
+        <AvatarStack />
+      </Panel>
     </ReactFlow>
   )
 }
