@@ -25,6 +25,7 @@ export default async function Page({
   }
 
   await liveblocks.getOrCreateRoom(id, {
+    organizationId: orgId,
     defaultAccesses: [],
     groupsAccesses: { [orgId]: ["room:write"] },
   })
