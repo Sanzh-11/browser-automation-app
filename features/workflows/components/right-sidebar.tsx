@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { useReactFlow, useStoreApi } from "@xyflow/react"
+import { useReactFlow, useStore, useStoreApi } from "@xyflow/react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -314,9 +314,9 @@ function RunButton() {
 export function RightSidebar() {
   const [tab, setTab] = useState("toolbar")
 
-  // TODO: read the currently selected node from React Flow.
-  const selected: StepNodeType | undefined = undefined
-
+  const selected = useStore((state) =>
+    state.nodes.find((node) => node.selected)
+  ) as StepNodeType | undefined
   // TODO: auto-switch to the Editor tab when the selection changes.
 
   return (
