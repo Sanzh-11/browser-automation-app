@@ -5,6 +5,7 @@ import { liveblocks } from "@/lib/liveblocks"
 import { getWorkflow } from "@/features/workflows/data"
 import { WorkflowShell } from "@/features/workflows/components/workflow-shell"
 import { Room } from "@/features/workflows/components/room"
+import { FlowProvider } from "@/features/workflows/components/flow-provider"
 
 export default async function Page({
   params,
@@ -32,7 +33,9 @@ export default async function Page({
 
   return (
     <Room roomId={id}>
-      <WorkflowShell workflowId={id} />
+      <FlowProvider>
+        <WorkflowShell workflowId={id} />
+      </FlowProvider>
     </Room>
   )
 }

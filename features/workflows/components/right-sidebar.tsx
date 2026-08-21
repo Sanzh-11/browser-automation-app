@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
+import { useReactFlow, useStoreApi } from "@xyflow/react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 import {
   Accordion,
@@ -156,11 +158,70 @@ const sections: { kind: StepNodeKind; label: string }[] = [
 // Every node type from the registry, filtered into the groups below.
 const definitions = Object.values(nodeRegistry)
 
+// A step node's rendered size is driven by its content, but new nodes need a
+// size up front to be dropped centered rather than with their corner on the
+// center point. These match the min width and the height of StepNode.
+const NODE_SIZE = { width: 200, height: 52 }
+
+// Returns the flow position that sits in the middle of the visible canvas. The
+// pane lives in another panel, so it is measured through the shared store.
+function useViewportCenter() {
+  const store = useStoreApi()
+  const { screenToFlowPosition } = useReactFlow()
+
+  return useCallback(() => {
+    const rect = store.getState().domNode?.getBoundingClientRect()
+    if (!rect) {
+      return { x: 0, y: 0 }
+    }
+
+    const center = screenToFlowPosition({
+      x: rect.x + rect.width / 2,
+      y: rect.y + rect.height / 2,
+    })
+
+    return {
+      x: center.x - NODE_SIZE.width / 2,
+      y: center.y - NODE_SIZE.height / 2,
+    }
+  }, [store, screenToFlowPosition])
+}
+
+// Titles are numbered per type — "Open URL 1", "Open URL 2" — so several nodes
+// of the same type stay tellable apart. Numbering picks up past the highest
+// number in use, so deleting a node never hands out a title twice.
+function nextTitle(type: NodeType, nodes: StepNodeType[]) {
+  const numbers = nodes
+    .filter((node) => node.data.type === type)
+    .map((node) => Number(/\s(\d+)$/.exec(node.data.title)?.[1] ?? 0))
+
+  return `${nodeRegistry[type].label} ${Math.max(0, ...numbers) + 1}`
+}
+
 // The Toolbar tab: a button per node type that adds it to the canvas.
 function Palette() {
+  const { addNodes, getNodes } = useReactFlow<StepNodeType>()
+  const viewportCenter = useViewportCenter()
+
   const add = (type: NodeType) => {
-    // TODO: add the clicked node to the canvas (one trigger max).
-    void type
+    const { kind } = nodeRegistry[type]
+    const nodes = getNodes()
+
+    // A workflow starts in exactly one place, so a second trigger is refused.
+    if (
+      kind === "trigger" &&
+      nodes.some((node) => node.data.kind === "trigger")
+    ) {
+      toast.error("A workflow can only have one trigger")
+      return
+    }
+
+    addNodes({
+      id: crypto.randomUUID(),
+      type: "step",
+      position: viewportCenter(),
+      data: { type, kind, title: nextTitle(type, nodes), values: {} },
+    })
   }
 
   return (
