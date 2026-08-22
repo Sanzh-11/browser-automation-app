@@ -17,4 +17,9 @@ export default defineConfig({
     },
   },
   dirs: ["features/workflows/tasks"],
+  build: {
+    // Stagehand spawns a crash-cleanup supervisor from a CLI entrypoint that
+    // sits next to its own dist files, so it has to stay in node_modules.
+    external: ["@browserbasehq/stagehand"],
+  },
 })
