@@ -7,6 +7,14 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
+import type { Edge } from "@xyflow/react"
+import type { StepNodeType } from "@/features/workflows/nodes/node-registry"
+
+export type WorkflowGraph = {
+  nodes: StepNodeType[]
+  edges: Edge[]
+}
+
 // Workflows belong to a Clerk organization; `organizationId` holds the Clerk
 // org id (`org_...`) and `createdBy` the Clerk user id (`user_...`). Clerk stays
 // the source of truth for both, so neither is a foreign key.
