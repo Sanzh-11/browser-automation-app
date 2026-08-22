@@ -1,4 +1,4 @@
-import { defineConfig } from "@trigger.dev/sdk";
+import { defineConfig } from "@trigger.dev/sdk"
 
 export default defineConfig({
   project: "proj_mnfxxuvcrjzlnournxhj",
@@ -16,5 +16,5 @@ export default defineConfig({
       randomize: true,
     },
   },
-  dirs: ["./src/trigger"],
-});
+  dirs: ["features/workflows/tasks"],
+})

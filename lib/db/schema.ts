@@ -24,7 +24,7 @@ export const workflows = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     organizationId: text("org_id").notNull(),
     name: text("name").notNull(),
-    graph: jsonb("graph"),
+    graph: jsonb("graph").$type<WorkflowGraph>(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true })
       .notNull()
